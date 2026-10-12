@@ -72,6 +72,7 @@
 import { reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -83,7 +84,7 @@ const data = reactive({
   tableData: [],
   title: null,
   difficulty: null,
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   // 竞赛模式相关
   contestMode: !!route.query.contestId,
   contestId: route.query.contestId ? Number(route.query.contestId) : null,

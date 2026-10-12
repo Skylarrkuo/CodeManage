@@ -109,6 +109,7 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 
 const data = reactive({
@@ -118,7 +119,7 @@ const data = reactive({
   tableData: [],
   name: null,
   status: null,
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   signupMap: {},
 })
 

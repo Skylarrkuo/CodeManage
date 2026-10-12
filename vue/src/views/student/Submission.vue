@@ -158,13 +158,14 @@
 <script setup>
 import { reactive } from 'vue'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 
 const data = reactive({
   pageNum: 1,
   pageSize: 10,
   total: 0,
   tableData: [],
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   codeDialogVisible: false,
   currentCode: '',
   currentLanguage: '',

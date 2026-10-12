@@ -105,7 +105,7 @@
 import { reactive } from 'vue'
 import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
-import { authHeaders, setUser } from '@/utils/auth'
+import { authHeaders, getUser, setUser } from '@/utils/auth'
 
 const emit = defineEmits(['updateUser'])
 
@@ -117,7 +117,7 @@ const defaultAvatar =
   'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 const data = reactive({
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   form: {},
 })
 

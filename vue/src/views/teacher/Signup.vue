@@ -124,6 +124,7 @@
 <script setup>
 import { reactive } from 'vue'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const data = reactive({
@@ -135,7 +136,7 @@ const data = reactive({
   studentId: null,
   status: null,
   // 当前登录用户信息（用于自动填充审核老师）
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   auditVisible: false,
   auditForm: {},
   auditType: 'approve', // 单条审核类型

@@ -165,6 +165,7 @@
 import { computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 import { renderMarkdown } from '@/utils/markdown'
 
@@ -174,7 +175,7 @@ const router = useRouter()
 const contestId = Number(route.params.id)
 
 const data = reactive({
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   loading: false,
   contest: null,
   // 报名信息

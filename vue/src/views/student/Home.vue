@@ -145,10 +145,11 @@
 import { reactive, onMounted } from 'vue'
 import router from '@/router'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 
 const data = reactive({
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   loadingStats: false,
   loadingSignup: false,
   loadingSubmission: false,

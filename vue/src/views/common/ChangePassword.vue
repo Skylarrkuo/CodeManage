@@ -24,9 +24,9 @@ import { reactive, ref } from 'vue'
 import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
-import { clearAuth } from '@/utils/auth'
+import { clearAuth, getUser } from '@/utils/auth'
 
-const user = JSON.parse(localStorage.getItem('system-user') || '{}')
+const user = getUser()
 
 const formRef = ref()
 

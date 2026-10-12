@@ -151,6 +151,7 @@
 import { computed, onMounted, onBeforeUnmount, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '@/utils/request'
+import { getUser } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 import { renderMarkdown } from '@/utils/markdown'
 import { Codemirror } from 'vue-codemirror'
@@ -165,7 +166,7 @@ const problemId = Number(route.params.id)
 const contestIdFromRoute = route.query.contestId ? Number(route.query.contestId) : null
 
 const data = reactive({
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
   // 竞赛模式相关
   contestMode: !!contestIdFromRoute,
   contestId: contestIdFromRoute,
