@@ -32,10 +32,10 @@ class PasswordUtilTest {
     }
 
     @Test
-    void matchesFallsBackToPlaintextForLegacyData() {
-        // 兼容分支：库中尚未迁移为 BCrypt 时按明文比对（不以 $2 开头即视为明文）
-        assertThat(PasswordUtil.matches("123456", "123456")).isTrue();
-        assertThat(PasswordUtil.matches("wrong", "123456")).isFalse();
+    void matchesRejectsPlaintextStoredValue() {
+        // 明文兼容分支已移除：库中若仍是明文，必须登录失败，而不是静默放行
+        assertThat(PasswordUtil.matches("123456", "123456")).isFalse();
+        assertThat(PasswordUtil.matches("admin", "admin")).isFalse();
     }
 
     @Test
