@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.ContestMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Contest">
+        select * from `contest`
+        <where>
+            <if test="name != null and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="status != null and status != ''"> and status = #{status}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.Contest">
+        select * from `contest` where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from `contest` where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.Contest" useGeneratedKeys="true" keyProperty="id">
+        insert into `contest`(name, description, level, type, status,
+                             sign_up_start_time, sign_up_end_time, start_time, end_time,
+                             creator_id, creator_name, create_time, update_time)
+        values (#{name}, #{description}, #{level}, #{type}, #{status},
+                #{signUpStartTime}, #{signUpEndTime}, #{startTime}, #{endTime},
+                #{creatorId}, #{creatorName}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Contest">
+        update `contest`
+        set name = #{name},
+            description = #{description},
+            level = #{level},
+            type = #{type},
+            status = #{status},
+            sign_up_start_time = #{signUpStartTime},
+            sign_up_end_time = #{signUpEndTime},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            creator_id = #{creatorId},
+            creator_name = #{creatorName},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        update `contest`
+        set status = #{status},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+</mapper>
+

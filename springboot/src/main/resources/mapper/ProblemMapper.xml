@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.ProblemMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Problem">
+        select * from `problem`
+        <where>
+            <if test="title != null and title != ''"> and title like concat('%', #{title}, '%')</if>
+            <if test="difficulty != null and difficulty != ''"> and difficulty = #{difficulty}</if>
+            <if test="type != null and type != ''"> and type = #{type}</if>
+            <if test="contestId != null"> and contest_id = #{contestId}</if>
+            <if test="isPublic != null"> and is_public = #{isPublic}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.Problem">
+        select * from `problem` where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from `problem` where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.Problem" useGeneratedKeys="true" keyProperty="id">
+        insert into `problem`(title, description, input_desc, output_desc,
+                              sample_input, sample_output, difficulty, tags,
+                              contest_id, type, is_public, create_time)
+        values (#{title}, #{description}, #{inputDesc}, #{outputDesc},
+                #{sampleInput}, #{sampleOutput}, #{difficulty}, #{tags},
+                #{contestId}, #{type}, #{isPublic}, #{createTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Problem">
+        update `problem`
+        set title = #{title},
+            description = #{description},
+            input_desc = #{inputDesc},
+            output_desc = #{outputDesc},
+            sample_input = #{sampleInput},
+            sample_output = #{sampleOutput},
+            difficulty = #{difficulty},
+            tags = #{tags},
+            contest_id = #{contestId},
+            type = #{type},
+            is_public = #{isPublic}
+        where id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.ContestSignupMapper">
+
+    <select id="selectAll" resultType="com.example.entity.ContestSignup">
+        select * from `contest_signup`
+        <where>
+            <if test="contestId != null"> and contest_id = #{contestId}</if>
+            <if test="studentId != null"> and student_id = #{studentId}</if>
+            <if test="status != null and status != ''"> and status = #{status}</if>
+        </where>
+        order by apply_time desc
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.ContestSignup">
+        select * from `contest_signup` where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from `contest_signup` where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.ContestSignup" useGeneratedKeys="true" keyProperty="id">
+        insert into `contest_signup`(contest_id, student_id, status, apply_time,
+                                     audit_teacher_id, audit_teacher_name, audit_time, remark)
+        values (#{contestId}, #{studentId}, #{status}, #{applyTime},
+                #{auditTeacherId}, #{auditTeacherName}, #{auditTime}, #{remark})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.ContestSignup">
+        update `contest_signup`
+        set contest_id = #{contestId},
+            student_id = #{studentId},
+            status = #{status},
+            apply_time = #{applyTime},
+            audit_teacher_id = #{auditTeacherId},
+            audit_teacher_name = #{auditTeacherName},
+            audit_time = #{auditTime},
+            remark = #{remark}
+        where id = #{id}
+    </update>
+
+</mapper>

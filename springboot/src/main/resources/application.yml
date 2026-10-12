@@ -1,0 +1,45 @@
+server:
+  port: 9090
+
+# 数据库配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ${DB_PASSWORD:}
+    url: jdbc:mysql://localhost:3306/bsoj?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  # 统一后端 Date 序列化 / 反序列化格式，方便与前端 "YYYY-MM-DD HH:mm:ss" 字符串互通
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# 配置mybatis实体和xml映射
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+fileBaseUrl: http://localhost
+
+# Judge0 在线评测配置
+judge0:
+  # 你的 Judge0 实例基础地址（不要带 /submissions）
+  base-url: http://localhost:2358
+  # 单次评测 CPU 时间限制（秒），不配置时默认 2 秒
+  cpu-time-limit: 2
+  # 各语言在 Judge0 中对应的 language_id（请根据你实际的 Judge0 /languages 接口结果调整）
+  language-id:
+    # C (GCC 9.2.0)
+    c: 50
+    # C++ (G++ 9.2.0)
+    cpp: 54
+    # Java (OpenJDK 13.0.1)
+    java: 62
+    # Python (3.8.1)
+    python: 71

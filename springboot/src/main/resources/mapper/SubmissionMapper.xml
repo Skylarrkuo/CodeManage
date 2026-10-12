@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.SubmissionMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Submission">
+        select * from `submission`
+        <where>
+            <if test="contestId != null"> and contest_id = #{contestId}</if>
+            <if test="problemId != null"> and problem_id = #{problemId}</if>
+            <if test="studentId != null"> and student_id = #{studentId}</if>
+            <if test="status != null and status != ''"> and status = #{status}</if>
+        </where>
+        order by submit_time desc
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.Submission">
+        select * from `submission` where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from `submission` where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.Submission" useGeneratedKeys="true" keyProperty="id">
+        insert into `submission`(contest_id, problem_id, student_id,
+                                 language, code, status, score,
+                                 time_used, memory_used, result_msg,
+                                 detail, submit_time, judge_time)
+        values (#{contestId}, #{problemId}, #{studentId},
+                #{language}, #{code}, #{status}, #{score},
+                #{timeUsed}, #{memoryUsed}, #{resultMsg},
+                #{detail}, #{submitTime}, #{judgeTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Submission">
+        update `submission`
+        set contest_id = #{contestId},
+            problem_id = #{problemId},
+            student_id = #{studentId},
+            language = #{language},
+            code = #{code},
+            status = #{status},
+            score = #{score},
+            time_used = #{timeUsed},
+            memory_used = #{memoryUsed},
+            result_msg = #{resultMsg},
+            detail = #{detail},
+            submit_time = #{submitTime},
+            judge_time = #{judgeTime}
+        where id = #{id}
+    </update>
+
+</mapper>

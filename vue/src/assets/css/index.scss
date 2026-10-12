@@ -1,0 +1,8 @@
+@forward "element-plus/theme-chalk/src/common/var.scss" with ($colors: (
+    // 全局主色调改为更清爽的蓝色，统一为浅色风格
+    "primary": ("base": #409eff),
+    "success": ("base": #239113),
+    "warning": ("base": #F9B44C),
+    "danger": ("base": #F64848),
+    "info": ("base": #58c199),
+));

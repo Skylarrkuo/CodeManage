@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.StudentMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Student">
+        select * from `student`
+        <where>
+            <if test="name != null and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="grade != null and grade != ''"> and grade like concat('%', #{grade}, '%')</if>
+            <if test="major != null and major != ''"> and major like concat('%', #{major}, '%')</if>
+            <if test="clazz != null and clazz != ''"> and clazz like concat('%', #{clazz}, '%')</if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.Student">
+        select * from `student` where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from `student` where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.Student" useGeneratedKeys="true" keyProperty="id">
+        insert into `student`(username, password, name, avatar, student_no, grade, major, clazz, role)
+        values (#{username}, #{password}, #{name}, #{avatar}, #{studentNo}, #{grade}, #{major}, #{clazz}, #{role})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Student">
+        update `student`
+        set username = #{username},
+            password = #{password},
+            name = #{name},
+            avatar = #{avatar},
+            student_no = #{studentNo},
+            grade = #{grade},
+            major = #{major},
+            clazz = #{clazz},
+            role = #{role}
+        where id = #{id}
+    </update>
+
+</mapper>
