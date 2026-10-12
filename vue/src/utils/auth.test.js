@@ -6,6 +6,7 @@ import {
   setUser,
   clearAuth,
   authHeaders,
+  consoleAccessError,
 } from '@/utils/auth'
 
 const TOKEN_KEY = 'system-token'
@@ -84,6 +85,38 @@ describe('utils/auth', () => {
     it('有 token 时返回 Bearer 头', () => {
       setToken('abc.def')
       expect(authHeaders()).toEqual({ Authorization: 'Bearer abc.def' })
+    })
+  })
+
+  describe('consoleAccessError（三个端 Layout 进入时的自查）', () => {
+    it.each([
+      ['空对象', {}],
+      ['null', null],
+      ['undefined', undefined],
+      ['有信息但没有 id', { username: 'x', role: 'ADMIN' }],
+    ])('未登录（%s）时提示登录', (_label, user) => {
+      expect(consoleAccessError(user, 'ADMIN')).toBe('请登录！')
+    })
+
+    it('角色与目标端相符时返回 null（放行）', () => {
+      expect(consoleAccessError({ id: 1, role: 'ADMIN' }, 'ADMIN')).toBeNull()
+      expect(consoleAccessError({ id: 2, role: 'TEACHER' }, 'TEACHER')).toBeNull()
+      expect(consoleAccessError({ id: 3, role: 'STUDENT' }, 'STUDENT')).toBeNull()
+    })
+
+    it.each([
+      ['ADMIN', '管理员', 'STUDENT'],
+      ['TEACHER', '教师', 'STUDENT'],
+      ['STUDENT', '学生', 'TEACHER'],
+    ])('访问 %s 端但角色不符时给出对应文案', (role, label, otherRole) => {
+      // 用另一个真实角色，以及一个不存在的角色，各验一次
+      expect(consoleAccessError({ id: 1, role: otherRole }, role)).toBe(`当前账号没有${label}权限`)
+      expect(consoleAccessError({ id: 1, role: 'HACKER' }, role)).toBe(`当前账号没有${label}权限`)
+    })
+
+    it('文案取自目标端而非用户自己的角色', () => {
+      // 学生误闯管理端 → 提示的是「没有管理员权限」，不是「没有学生权限」
+      expect(consoleAccessError({ id: 1, role: 'STUDENT' }, 'ADMIN')).toBe('当前账号没有管理员权限')
     })
   })
 })

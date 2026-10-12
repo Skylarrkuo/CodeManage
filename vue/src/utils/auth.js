@@ -45,3 +45,30 @@ export const authHeaders = () => {
   const token = getToken()
   return token ? { Authorization: 'Bearer ' + token } : {}
 }
+
+/** 角色中文名，用于提示文案 */
+const ROLE_LABEL = {
+  ADMIN: '管理员',
+  TEACHER: '教师',
+  STUDENT: '学生',
+}
+
+/**
+ * 校验当前用户能否进入某个角色的控制台。
+ *
+ * <p>三个端 Layout 进入时的自查。注意这是**纵深防御**：路由守卫在进入 Layout 之前
+ * 已经保证了 token 有效且角色匹配，所以正常导航下这里不会拦到人。</p>
+ *
+ * @param user 当前用户信息（来自 {@link getUser}）
+ * @param requiredRole 该控制台要求的角色：ADMIN / TEACHER / STUDENT
+ * @returns {string|null} 通过返回 null；否则返回需要提示给用户的错误文案
+ */
+export const consoleAccessError = (user, requiredRole) => {
+  if (!user?.id) {
+    return '请登录！'
+  }
+  if (user.role !== requiredRole) {
+    return `当前账号没有${ROLE_LABEL[requiredRole] || ''}权限`
+  }
+  return null
+}

@@ -70,25 +70,24 @@ import { reactive } from 'vue'
 import router from '@/router'
 import { ElMessage } from 'element-plus'
 
-import { clearAuth } from '@/utils/auth'
+import { clearAuth, getUser, consoleAccessError } from '@/utils/auth'
 
 const defaultAvatar =
   'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 const data = reactive({
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
+  user: getUser(),
 })
 
-if (!data.user?.id) {
-  ElMessage.error('请登录！')
-  router.push('/login')
-} else if (data.user.role !== 'STUDENT') {
-  ElMessage.error('当前账号没有学生权限')
+// 进入学生端前的自查（纵深防御，路由守卫已有一层）
+const accessError = consoleAccessError(data.user, 'STUDENT')
+if (accessError) {
+  ElMessage.error(accessError)
   router.push('/login')
 }
 
 const updateUser = () => {
-  data.user = JSON.parse(localStorage.getItem('system-user') || '{}')
+  data.user = getUser()
 }
 
 const logout = () => {
