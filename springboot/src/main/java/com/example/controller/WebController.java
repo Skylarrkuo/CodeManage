@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.auth.JwtUtil;
 import com.example.auth.LoginUser;
 import com.example.auth.Public;
+import com.example.auth.RequireRole;
 import com.example.auth.UserContext;
 import com.example.common.Result;
 import com.example.entity.Account;
@@ -92,6 +93,7 @@ public class WebController {
      * <p>身份一律取自 token，覆盖客户端传入的 username / role，防止改他人密码。</p>
      */
     @PutMapping("/updatePassword")
+    @RequireRole({"ADMIN", "TEACHER", "STUDENT"})
     public Result updatePassword(@RequestBody Account account) {
         LoginUser current = UserContext.get();
         if (current == null) {

@@ -26,6 +26,11 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 每个请求先清一次：preHandle 返回 false 时 Spring 不会回调 afterCompletion
+        // （HandlerExecutionChain.applyPreHandle 判定失败时 interceptorIndex 仍为 -1），
+        // 这里清一次可确保本线程不会沿用上一个请求残留的身份。
+        UserContext.clear();
+
         // CORS 预检请求不携带业务身份，直接放行
         if (CorsUtils.isPreFlightRequest(request)) {
             return true;

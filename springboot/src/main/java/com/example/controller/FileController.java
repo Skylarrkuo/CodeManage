@@ -2,6 +2,7 @@ package com.example.controller;
 
 import cn.hutool.core.io.FileUtil;
 import com.example.auth.Public;
+import com.example.auth.RequireRole;
 import com.example.common.Result;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,8 +32,11 @@ public class FileController {
 
     /**
      * 文件上传
+     *
+     * <p>任意已登录角色均可用（学生/教师上传头像）。</p>
      */
     @PostMapping("/upload")
+    @RequireRole({"ADMIN", "TEACHER", "STUDENT"})
     public Result upload(MultipartFile file) {
         // 定义文件的唯一标识
         String fileName = System.currentTimeMillis() + "-" + file.getOriginalFilename();

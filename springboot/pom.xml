@@ -53,6 +53,13 @@
             </exclusions>
         </dependency>
 
+        <!-- 测试：传递引入 JUnit 5、Mockito、AssertJ、JsonPath 与 spring-test（版本由 parent 统一管理） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
