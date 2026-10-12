@@ -8,6 +8,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -54,7 +55,21 @@ public class Judge0Client {
     @Value("${judge0.language-id.python:71}")
     private Integer pythonLanguageId;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    /**
+     * HTTP 客户端。
+     *
+     * <p><b>必须设置超时</b>：评测跑在有界线程池上，一旦 Judge0 卡住，
+     * 没有超时的请求会让评测线程永久阻塞，几次之后线程池就被耗尽。</p>
+     */
+    private final RestTemplate restTemplate = createRestTemplate();
+
+    private static RestTemplate createRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5_000);
+        // wait=true 下 Judge0 会阻塞到评测完成，需为编译（尤其 Java）留足时间
+        factory.setReadTimeout(60_000);
+        return new RestTemplate(factory);
+    }
 
     /** 评测通过的默认得分 */
     private static final int FULL_SCORE = 100;

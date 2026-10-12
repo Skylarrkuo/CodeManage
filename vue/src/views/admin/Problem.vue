@@ -188,6 +188,17 @@
             />
           </template>
         </el-table-column>
+        <el-table-column label="分值" width="130">
+          <template #default="scope">
+            <el-input-number
+              v-model="scope.row.score"
+              :min="0"
+              size="small"
+              controls-position="right"
+              style="width: 100%"
+            />
+          </template>
+        </el-table-column>
         <el-table-column label="输入">
           <template #default="scope">
             <el-input v-model="scope.row.inputData" type="textarea" :rows="2" />
@@ -208,6 +219,12 @@
       </el-table>
       <template #footer>
         <span class="dialog-footer">
+          <span style="margin-right: 16px; color: #909399">
+            分值合计：{{ caseScoreTotal }}
+            <span v-if="caseScoreTotal === 0" style="color: #e6a23c">
+              （未配置分值，评测时按 100 / {{ data.caseList?.length || 1 }} 均分计）
+            </span>
+          </span>
           <el-button @click="addCase">新增用例</el-button>
           <el-button type="primary" @click="saveCases">保 存</el-button>
         </span>
@@ -217,7 +234,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import request from '@/utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -350,6 +367,12 @@ const handleDelete = (id) => {
 }
 
 // ---------------- 测试用例管理 ----------------
+
+// 测试点分值合计。为 0 表示尚未配置分值，后端评测时会按 100 / N 均分兜底
+const caseScoreTotal = computed(() =>
+  (data.caseList || []).reduce((sum, c) => sum + (Number(c.score) || 0), 0)
+)
+
 const openCases = (row) => {
   if (!row?.id) return
   data.currentProblemId = row.id
@@ -368,6 +391,7 @@ const addCase = () => {
     inputData: '',
     outputData: '',
     isSample: 0,
+    score: 0,
     orderNo: data.caseList.length + 1,
   })
 }

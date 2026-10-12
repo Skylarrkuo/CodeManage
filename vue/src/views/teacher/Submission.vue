@@ -25,7 +25,9 @@
         <el-option label="等待评测" value="PENDING" />
         <el-option label="评测中" value="JUDGING" />
         <el-option label="通过" value="ACCEPTED" />
+        <el-option label="部分通过" value="PARTIAL" />
         <el-option label="答案错误" value="WRONG_ANSWER" />
+        <el-option label="系统错误" value="ERROR" />
       </el-select>
       <el-button type="primary" @click="load">查询</el-button>
       <el-button type="info" style="margin-left: 10px" @click="reset">重置</el-button>
@@ -203,6 +205,7 @@ const statusConfig = {
   PENDING: { type: 'info', label: '排队中' },
   JUDGING: { type: 'warning', label: '评测中' },
   ACCEPTED: { type: 'success', label: '通过' },
+  PARTIAL: { type: 'warning', label: '部分通过' },
   WRONG_ANSWER: { type: 'danger', label: '答案错误' },
   ERROR: { type: 'danger', label: '系统错误' },
 }

@@ -35,8 +35,10 @@
    - 异步任务 `evaluateAsync` 将状态改为 `JUDGING`，并逐个测试点调用 Judge0。
 4. Judge0 返回每个测试点的运行结果（时间、内存、状态、输出等）。
 5. 后端统计通过情况，更新提交记录：
-   - 测试点全部通过：`status = ACCEPTED`，`score = 100`；
-   - 否则：`status = WRONG_ANSWER`，`score = 0`。
+   - 全部通过：`status = ACCEPTED`，`score` = 题目总分；
+   - 部分通过：`status = PARTIAL`，`score` = 通过的测试点分值之和；
+   - 全未通过：`status = WRONG_ANSWER`，`score = 0`。
+   - 计分按测试点分值加权；若题目尚未配置分值（合计 ≤ 0），每个测试点按 `100 / N` 均分兜底。
 6. 前端通过轮询 `/submission/selectById/{id}` 刷新评测状态，并展示总分、耗时、内存及测试点详情。
 
 ---
@@ -84,7 +86,7 @@
   - `problem_id`：关联题目 ID
   - `input_data` / `output_data`
   - `is_sample`：是否样例（1 表示在题面中展示）
-  - `score`：测试点分值（当前实现整体 100 分，可扩展为按分值加权）
+  - `score`：测试点分值。评测按此加权计分；未配置（合计为 0）时按 `100 / N` 均分兜底
   - `order_no`：测试点顺序
 
 后端相关类：
@@ -150,7 +152,7 @@ Markdown 渲染由 `src/utils/markdown.js` 统一封装，禁用原始 HTML 以�
   - `problem_id` / `student_id`
   - `language`：C / C++ / Java / Python
   - `code`：源代码
-  - `status`：`PENDING` / `JUDGING` / `ACCEPTED` / `WRONG_ANSWER` / `ERROR`
+  - `status`：`PENDING` / `JUDGING` / `ACCEPTED` / `PARTIAL` / `WRONG_ANSWER` / `ERROR`
   - `score`：得分
   - `time_used` / `memory_used`
   - `result_msg`：结果说明（简要文本）
@@ -176,8 +178,9 @@ Markdown 渲染由 `src/utils/markdown.js` 统一封装，禁用原始 HTML 以�
   - `judgeWithMultipleCases(Submission, List<ProblemTestCase>)`：
     - 遍历测试用例，调用 `Judge0Client.judgeOnce`
     - 统计通过数，记录最大耗时与内存
-    - 构造测试点详情列表（状态、时间、内存、输入 / 期望输出、失败时的 stdout/stderr/compileOutput）
-    - 全部通过 → `ACCEPTED` + `score = 100`；否则 → `WRONG_ANSWER` + `score = 0`
+    - 构造测试点详情列表（状态、时间、内存、该点分值 / 得分、输入 / 期望输出、失败时的 stdout/stderr/compileOutput）
+    - 遇到编译错误立即短路，整体判为 `ERROR`，不再调用后续测试点
+    - 全部通过 → `ACCEPTED` + 满分；部分通过 → `PARTIAL` + 通过点分值之和；全未通过 → `WRONG_ANSWER` + 0
 
 - `Judge0Client`：Judge0 HTTP 客户端
   - `judgeOnce`：对单个测试用例调用 `/submissions/?base64_encoded=false&wait=true`

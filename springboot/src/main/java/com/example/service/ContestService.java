@@ -364,8 +364,10 @@ public class ContestService {
             if ("ACCEPTED".equals(status)) {
                 stat.solved = true;
                 stat.acceptedTime = submitTime;
-            } else if ("WRONG_ANSWER".equals(status) || "ERROR".equals(status)) {
-                // 简化处理：WA 和 ERROR 都按一次错误计入罚时
+            } else if (!"PENDING".equals(status) && !"JUDGING".equals(status)) {
+                // 除「排队中/评测中」外，凡未通过的提交都按一次错误计入罚时。
+                // 这样用排除法而不是枚举 WRONG_ANSWER/ERROR，新增状态（如 PARTIAL
+                // 部分通过）会自动被算作未通过，不会漏计罚时。
                 stat.wrongAttempts++;
             }
         }

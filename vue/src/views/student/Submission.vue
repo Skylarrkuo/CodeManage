@@ -104,6 +104,13 @@
               </el-tag>
             </template>
           </el-table-column>
+          <el-table-column label="得分" width="100">
+            <template #default="{ row }">
+              <!-- 旧提交的 detail 里没有分值字段，显示 - -->
+              <span v-if="row.score != null">{{ row.earned ?? 0 }} / {{ row.score }}</span>
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
           <el-table-column label="耗时(ms)" prop="time" width="100" />
           <el-table-column label="内存(KB)" prop="memory" width="100" />
           <el-table-column label="输入预览" prop="input" />
@@ -172,6 +179,7 @@ const statusConfig = {
   PENDING: { type: 'info', label: '排队中' },
   JUDGING: { type: 'warning', label: '评测中' },
   ACCEPTED: { type: 'success', label: '通过' },
+  PARTIAL: { type: 'warning', label: '部分通过' },
   WRONG_ANSWER: { type: 'danger', label: '答案错误' },
   ERROR: { type: 'danger', label: '系统错误' },
 }

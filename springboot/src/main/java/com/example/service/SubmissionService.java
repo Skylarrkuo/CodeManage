@@ -1,5 +1,6 @@
 package com.example.service;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.example.entity.Contest;
 import com.example.entity.ContestSignup;
@@ -31,6 +32,12 @@ import java.util.Map;
  */
 @Service
 public class SubmissionService {
+
+    /** 题目未配置测试点分值时使用的总分（此时每个测试点均分） */
+    private static final int DEFAULT_TOTAL_SCORE = 100;
+
+    /** Judge0 状态码：编译错误 */
+    private static final int JUDGE0_COMPILATION_ERROR = 6;
 
     @Resource
     private SubmissionMapper submissionMapper;
@@ -111,7 +118,7 @@ public class SubmissionService {
      * 然后调用公共评测逻辑 {@link #evaluateSubmission(Submission)} 完成实际判题，
      * 最后将评测结果写回数据库。</p>
      */
-    @Async
+    @Async("judgeExecutor")
     public void evaluateAsync(Integer submissionId) {
         if (submissionId == null) {
             return;
@@ -122,13 +129,21 @@ public class SubmissionService {
             return;
         }
 
-        // 标记为评测中
-        submission.setStatus("JUDGING");
-        submission.setResultMsg("评测中，请稍候...");
-        submissionMapper.updateById(submission);
+        try {
+            // 标记为评测中
+            submission.setStatus("JUDGING");
+            submission.setResultMsg("评测中，请稍候...");
+            submissionMapper.updateById(submission);
 
-        // 调用公共评测逻辑（内部会根据结果设置状态、分数、时间等）
-        evaluateSubmission(submission);
+            // 调用公共评测逻辑（内部会根据结果设置状态、分数、时间等）
+            evaluateSubmission(submission);
+        } catch (Exception e) {
+            // 兜底：任何未预料的异常都不该让提交永远停在 JUDGING
+            e.printStackTrace();
+            markError(submission, "评测过程中发生异常：" + e.getClass().getSimpleName()
+                    + (e.getMessage() == null ? "" : " - " + e.getMessage()));
+            submission.setJudgeTime(new Date());
+        }
 
         // 将评测结果写回数据库
         submissionMapper.updateById(submission);
@@ -182,19 +197,11 @@ public class SubmissionService {
     void evaluateSubmission(Submission submission) {
         try {
             if (submission.getProblemId() == null) {
-                submission.setStatus("ERROR");
-                submission.setScore(0);
-                submission.setTimeUsed(0);
-                submission.setMemoryUsed(0);
-                submission.setResultMsg("评测失败：未指定题目ID");
+                markError(submission, "评测失败：未指定题目ID");
             } else {
                 Problem problem = problemService.selectById(submission.getProblemId());
                 if (problem == null) {
-                    submission.setStatus("ERROR");
-                    submission.setScore(0);
-                    submission.setTimeUsed(0);
-                    submission.setMemoryUsed(0);
-                    submission.setResultMsg("评测失败：题目不存在（ID=" + submission.getProblemId() + ")");
+                    markError(submission, "评测失败：题目不存在（ID=" + submission.getProblemId() + ")");
                 } else {
                     // 先尝试查找题目的测试用例列表
                     List<ProblemTestCase> cases = problemTestCaseMapper.selectByProblemId(problem.getId());
@@ -207,40 +214,46 @@ public class SubmissionService {
                         judgeWithMultipleCases(submission, cases);
                     }
                     if (submission.getStatus() == null) {
-                        submission.setStatus("ERROR");
-                        submission.setScore(0);
-                        submission.setResultMsg("评测失败：未知错误");
+                        markError(submission, "评测失败：未知错误");
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            submission.setStatus("ERROR");
-            submission.setScore(0);
-            submission.setTimeUsed(0);
-            submission.setMemoryUsed(0);
-            submission.setResultMsg("评测过程中发生异常：" + e.getClass().getSimpleName() + " - " + e.getMessage());
+            markError(submission, "评测过程中发生异常：" + e.getClass().getSimpleName()
+                    + (e.getMessage() == null ? "" : " - " + e.getMessage()));
         }
 
         submission.setJudgeTime(new Date());
     }
 
     /**
-     * 使用多组测试用例进行评测：全部通过则 AC，否则 WA。
+     * 使用多组测试用例进行评测。
+     *
+     * <p>计分规则：总分 = 通过的测试点分值之和。若该题所有测试点的分值之和 ≤ 0
+     * （即尚未配置分值），则退化为均分——每个测试点按 100/N 计，全部通过仍是 100 分。</p>
+     *
+     * <p>状态：全过 ACCEPTED、部分通过 PARTIAL、一个都没过 WRONG_ANSWER、
+     * 编译错误或服务异常 ERROR。</p>
      */
     private void judgeWithMultipleCases(Submission submission, List<ProblemTestCase> cases) {
         if (cases == null || cases.isEmpty()) {
-            submission.setStatus("ERROR");
-            submission.setScore(0);
-            submission.setTimeUsed(0);
-            submission.setMemoryUsed(0);
-            submission.setResultMsg("评测失败：题目尚未配置测试用例");
-            submission.setDetail(null);
+            markError(submission, "评测失败：题目尚未配置测试用例");
             return;
         }
 
         int total = cases.size();
+
+        // 该题是否已配置测试点分值；和 ≤ 0 视为未配置，退化为均分
+        int configuredSum = 0;
+        for (ProblemTestCase tc : cases) {
+            configuredSum += caseScore(tc);
+        }
+        boolean equalSplit = configuredSum <= 0;
+        int maxScore = equalSplit ? DEFAULT_TOTAL_SCORE : configuredSum;
+
         int passed = 0;
+        int earned = 0;
         int maxTimeMs = 0;
         int maxMemKb = 0;
 
@@ -249,6 +262,9 @@ public class SubmissionService {
 
         int index = 1;
         for (ProblemTestCase tc : cases) {
+            // 该测试点的满分：已配置时取配置值，否则按均分累积取整
+            int caseMax = equalSplit ? equalShare(index - 1, total) : caseScore(tc);
+
             Judge0Client.Judge0Result r = judge0Client.judgeOnce(
                     submission.getCode(),
                     submission.getLanguage(),
@@ -258,12 +274,17 @@ public class SubmissionService {
 
             // 本地参数错误或服务异常
             if (r.getStatusId() != null && r.getStatusId() < 0) {
-                submission.setStatus("ERROR");
-                submission.setScore(0);
-                submission.setTimeUsed(0);
-                submission.setMemoryUsed(0);
-                submission.setResultMsg("评测失败：" + r.getStatusDesc());
-                submission.setDetail(null);
+                markError(submission, "评测失败：" + r.getStatusDesc());
+                return;
+            }
+
+            // 编译错误：后续测试点必然同样编译失败，没必要再调用 Judge0，直接短路
+            if (r.getStatusId() != null && r.getStatusId() == JUDGE0_COMPILATION_ERROR) {
+                String compileOutput = r.getCompileOutput();
+                if (StrUtil.isBlank(compileOutput)) {
+                    compileOutput = r.getStatusDesc();
+                }
+                markError(submission, "编译错误：\n" + safePreview(compileOutput, 4000));
                 return;
             }
 
@@ -283,9 +304,13 @@ public class SubmissionService {
             item.put("time", timeMs);
             item.put("memory", memKb);
             item.put("accepted", r.isAccepted());
+            // 该测试点的满分与得分，供前端解释「为什么是这个分数」
+            item.put("score", caseMax);
+            item.put("earned", r.isAccepted() ? caseMax : 0);
 
             if (r.isAccepted()) {
                 passed++;
+                earned += caseMax;
             } else {
                 // 仅对未通过的测试点记录输出信息，避免 JSON 过大
                 item.put("stdout", safePreview(r.getStdout()));
@@ -308,26 +333,66 @@ public class SubmissionService {
 
         if (passed == total) {
             submission.setStatus("ACCEPTED");
-            submission.setScore(100);
+            // 全部通过一律给满分，避免均分取整带来的误差
+            submission.setScore(maxScore);
             submission.setResultMsg("通过所有 " + total + " 个测试用例。");
-        } else {
+        } else if (passed == 0) {
             submission.setStatus("WRONG_ANSWER");
             submission.setScore(0);
-            submission.setResultMsg("通过 " + passed + " / " + total + " 个测试用例，详情请查看测试点结果。");
+            submission.setResultMsg("通过 0 / " + total + " 个测试用例，详情请查看测试点结果。");
+        } else {
+            submission.setStatus("PARTIAL");
+            submission.setScore(earned);
+            submission.setResultMsg("通过 " + passed + " / " + total + " 个测试用例，得分 "
+                    + earned + " / " + maxScore + "，详情请查看测试点结果。");
         }
     }
 
+    /** 取测试点配置的分值，null 或负数记为 0 */
+    private static int caseScore(ProblemTestCase tc) {
+        if (tc.getScore() == null) {
+            return 0;
+        }
+        return Math.max(tc.getScore(), 0);
+    }
+
     /**
-     * 截断长文本，避免 result/detail 过大。
+     * 均分模式下第 i 个（从 0 起）测试点的分值。
+     *
+     * <p>用累积取整保证 N 个测试点的分值之和恰好等于 {@link #DEFAULT_TOTAL_SCORE}，
+     * 例如 3 个测试点时分别是 33 / 34 / 33。</p>
+     */
+    private static int equalShare(int i, int total) {
+        return (int) Math.round(DEFAULT_TOTAL_SCORE * (i + 1.0) / total)
+                - (int) Math.round(DEFAULT_TOTAL_SCORE * (double) i / total);
+    }
+
+    /** 统一把提交置为评测失败（ERROR）状态并清空评测详情 */
+    private void markError(Submission submission, String resultMsg) {
+        submission.setStatus("ERROR");
+        submission.setScore(0);
+        submission.setTimeUsed(0);
+        submission.setMemoryUsed(0);
+        submission.setResultMsg(resultMsg);
+        submission.setDetail(null);
+    }
+
+    /**
+     * 截断长文本，避免 result/detail 过大（默认上限 300 字符）。
      */
     private String safePreview(String s) {
+        return safePreview(s, 300);
+    }
+
+    /** 截断长文本到指定长度 */
+    private String safePreview(String s, int maxLength) {
         if (s == null) {
             return "";
         }
-        if (s.length() <= 300) {
+        if (s.length() <= maxLength) {
             return s;
         }
-        return s.substring(0, 300) + "...";
+        return s.substring(0, maxLength) + "...";
     }
 
     public void deleteById(Integer id) {

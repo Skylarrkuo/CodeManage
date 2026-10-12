@@ -184,7 +184,7 @@ const data = reactive({
 })
 
 // 终止状态：一旦进入这些状态就停止轮询
-const terminalStatuses = ['ACCEPTED', 'WRONG_ANSWER', 'ERROR', 'ERROR']
+const terminalStatuses = ['ACCEPTED', 'PARTIAL', 'WRONG_ANSWER', 'ERROR']
 
 let statusPollTimer = null
 
@@ -211,6 +211,7 @@ const statusConfig = {
   PENDING: { type: 'info', label: '等待评测' },
   JUDGING: { type: 'warning', label: '评测中' },
   ACCEPTED: { type: 'success', label: '通过' },
+  PARTIAL: { type: 'warning', label: '部分通过' },
   WRONG_ANSWER: { type: 'danger', label: '答案错误' },
   ERROR: { type: 'danger', label: '系统错误' },
 }
