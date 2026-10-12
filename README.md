@@ -134,6 +134,26 @@ mvn spring-boot:run
 
 登录页支持一键填充上述示例账号。
 
+### 4.7 运行测试
+
+**后端**（JUnit 5 + Mockito + MockMvc，不依赖数据库）：
+
+```bash
+cd springboot
+mvn test
+```
+
+覆盖认证授权（JWT、BCrypt、拦截器 401/403、各接口的角色规则与数据归属）与评测计分逻辑。
+
+**前端**（Vitest + jsdom，覆盖登录态存取、请求拦截器、路由守卫）：
+
+```bash
+cd vue
+npm test
+```
+
+首次运行需先 `npm install` 以拉取 `vitest` 与 `jsdom`。
+
 ---
 
 ## 5. 更多文档

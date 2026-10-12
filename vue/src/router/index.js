@@ -1,12 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getToken, getUser } from '@/utils/auth'
-
-/** 各角色登录后的首页 */
-const roleHome = {
-  ADMIN: '/admin/home',
-  TEACHER: '/teacher/home',
-  STUDENT: '/student/home',
-}
+import { authGuard } from './guard'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -79,24 +72,7 @@ const router = createRouter({
   ],
 })
 
-/**
- * 全局路由守卫：
- * - 公开页面（登录、注册）直接放行；
- * - 未登录一律跳登录页；
- * - 已登录但访问了不属于自己角色的页面时，送回该角色的首页（不清除登录态）。
- */
-router.beforeEach((to) => {
-  if (to.meta.public) {
-    return true
-  }
-  if (!getToken()) {
-    return '/login'
-  }
-  const needRole = to.matched.find((r) => r.meta?.role)?.meta?.role
-  if (needRole && getUser().role !== needRole) {
-    return roleHome[getUser().role] || '/login'
-  }
-  return true
-})
+// 全局路由守卫（实现见 ./guard.js）
+router.beforeEach(authGuard)
 
 export default router
