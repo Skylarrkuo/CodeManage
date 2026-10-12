@@ -1,13 +1,19 @@
 server:
   port: 9090
 
-# 数据库配置
 spring:
+  # 默认激活 local profile：本机真实的数据库密码、Judge0 地址、JWT 密钥
+  # 都放在 application-local.yml（已加入 .gitignore，不会提交到仓库）。
+  # 其他环境用环境变量 SPRING_PROFILES_ACTIVE 覆盖，例如 SPRING_PROFILES_ACTIVE=prod。
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  # 数据库配置（密码等敏感项见 application-local.yml 或环境变量）
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
-    url: jdbc:mysql://localhost:3306/bsoj?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/bsoj?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
   servlet:
     multipart:
       max-file-size: 100MB
@@ -29,8 +35,8 @@ fileBaseUrl: http://localhost
 
 # Judge0 在线评测配置
 judge0:
-  # 你的 Judge0 实例基础地址（不要带 /submissions）
-  base-url: http://localhost:2358
+  # Judge0 实例基础地址（不要带 /submissions），见 application-local.yml 或环境变量 JUDGE0_BASE_URL
+  base-url: ${JUDGE0_BASE_URL:}
   # 单次评测 CPU 时间限制（秒），不配置时默认 2 秒
   cpu-time-limit: 2
   # 各语言在 Judge0 中对应的 language_id（请根据你实际的 Judge0 /languages 接口结果调整）
@@ -46,8 +52,8 @@ judge0:
 
 # JWT 认证配置
 jwt:
-  # 签名密钥（HS256）。生产环境务必替换为随机生成的长密钥（建议 ≥32 字节）并通过环境变量注入，
-  # 不要将真实密钥提交到公开仓库。
-  secret: bsoj-code-manage-jwt-secret-change-me-in-production-2f8a1c9e4b
+  # 签名密钥（HS256），至少 32 字节。见 application-local.yml 或环境变量 JWT_SECRET。
+  # 未配置时应用启动即失败（避免用空密钥签发 token）。
+  secret: ${JWT_SECRET:}
   # token 有效期（小时）
-  expire-hours: 12
+  expire-hours: ${JWT_EXPIRE_HOURS:12}

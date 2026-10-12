@@ -220,7 +220,7 @@ class AuthInterceptorTest {
 
     @Test
     void rejectsTokenSignedWithAnotherSecret() throws Exception {
-        JwtTestSupport.init("another-secret-0123456789abcdef", 12);
+        JwtTestSupport.init("another-secret-key-0123456789abcdef", 12);
         String foreignToken;
         try {
             foreignToken = JwtUtil.createToken(new LoginUser(1, "a", "A", "ADMIN"));

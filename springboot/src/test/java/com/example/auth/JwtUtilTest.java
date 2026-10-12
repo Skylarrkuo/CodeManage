@@ -48,7 +48,7 @@ class JwtUtilTest {
 
     @Test
     void parseReturnsNullForTokenSignedWithAnotherSecret() {
-        JwtTestSupport.init("another-secret-0123456789abcdef", 12);
+        JwtTestSupport.init("another-secret-key-0123456789abcdef", 12);
         String foreignToken = JwtUtil.createToken(sampleUser());
 
         // 换回测试密钥后再解析，签名不匹配

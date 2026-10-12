@@ -22,6 +22,9 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
+    /** 签名密钥的最小长度（HS256 建议至少 256 bit） */
+    private static final int MIN_SECRET_BYTES = 32;
+
     /** 签名密钥（由配置注入，切勿退化为纯静态工具类，否则此处为 null） */
     private static byte[] KEY;
 
@@ -36,6 +39,14 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
+        // 快速失败：密钥缺失或过短时直接让应用启动失败，
+        // 避免用空密钥签发 token（那样任何人都能伪造任意身份的 token）。
+        if (StrUtil.isBlank(secret) || secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
+            throw new IllegalStateException(
+                    "jwt.secret 未配置或长度不足 " + MIN_SECRET_BYTES + " 字节。"
+                            + "请在 application-local.yml 中设置 jwt.secret，"
+                            + "或通过环境变量 JWT_SECRET 注入（可用 `openssl rand -base64 48` 生成）。");
+        }
         KEY = secret.getBytes(StandardCharsets.UTF_8);
         EXPIRE_SECONDS = expireHours * 3600L;
     }

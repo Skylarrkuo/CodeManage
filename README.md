@@ -75,10 +75,23 @@ CodeManage 面向高校程序设计课程与各类编程竞赛场景，提供「
 
 ### 4.3 配置后端
 
-编辑 `springboot/src/main/resources/application.yml`，至少确认：
+数据库密码、Judge0 地址与 JWT 密钥等**环境相关值**统一放在 `application-local.yml`。
+该文件已被 `.gitignore` 排除（不会提交），需从模板创建：
 
-- `spring.datasource.url` / `username` / `password` 指向你的 MySQL
+```bash
+cd springboot/src/main/resources
+cp application-local.yml.example application-local.yml
+```
+
+然后编辑 `application-local.yml`，至少确认：
+
+- `spring.datasource.password` 是你的 MySQL 密码
 - `judge0.base-url` 指向可访问的 Judge0 服务（例如 `http://127.0.0.1:2358`）
+- `jwt.secret` 为不少于 32 字节的随机字符串（可用 `openssl rand -base64 48` 生成）
+
+`application.yml` 默认激活 `local` profile。其他环境可用环境变量覆盖：
+`SPRING_PROFILES_ACTIVE`、`DB_USERNAME` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT`、
+`JUDGE0_BASE_URL`、`JWT_SECRET` / `JWT_EXPIRE_HOURS`。
 
 更多后端配置细节见：`文档/configuration.md`。
 
