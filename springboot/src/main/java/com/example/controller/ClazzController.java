@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.auth.RequireRole;
 import com.example.common.Result;
 import com.example.entity.Clazz;
 import com.example.service.ClazzService;
@@ -11,9 +12,13 @@ import java.util.List;
 
 /**
  * 班级管理前端操作接口
+ *
+ * <p>写操作与分页查询仅管理员可用；教师端在竞赛「按班级批量参赛」时需要读取班级下拉，
+ * 因此 selectAll / selectById 对教师开放。</p>
  */
 @RestController
 @RequestMapping("/clazz")
+@RequireRole("ADMIN")
 public class ClazzController {
 
     @Resource
@@ -42,6 +47,7 @@ public class ClazzController {
 
     /** 根据ID查询 */
     @GetMapping("/selectById/{id}")
+    @RequireRole({"ADMIN", "TEACHER"})
     public Result selectById(@PathVariable Integer id) {
         Clazz clazz = clazzService.selectById(id);
         return Result.success(clazz);
@@ -49,6 +55,7 @@ public class ClazzController {
 
     /** 查询所有 */
     @GetMapping("/selectAll")
+    @RequireRole({"ADMIN", "TEACHER"})
     public Result selectAll(Clazz clazz) {
         List<Clazz> list = clazzService.selectAll(clazz);
         return Result.success(list);

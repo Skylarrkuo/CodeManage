@@ -62,7 +62,7 @@
     >
       <el-form :model="data.form" label-width="80px" style="padding-right: 30px">
         <el-form-item label="头像" prop="avatar">
-          <el-upload :action="uploadUrl" list-type="picture" :on-success="handleImgSuccess">
+          <el-upload :action="uploadUrl" :headers="uploadHeaders" list-type="picture" :on-success="handleImgSuccess">
             <el-button type="primary">上传图片</el-button>
           </el-upload>
         </el-form-item>
@@ -96,8 +96,11 @@
 import request from '@/utils/request'
 import { reactive } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { authHeaders } from '@/utils/auth'
 
 const uploadUrl = import.meta.env.VITE_BASE_URL + '/files/upload'
+// el-upload 直连后端，不经过 axios 拦截器，需手动带上鉴权头
+const uploadHeaders = authHeaders()
 
 const data = reactive({
   pageNum: 1,

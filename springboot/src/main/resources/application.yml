@@ -43,3 +43,11 @@ judge0:
     java: 62
     # Python (3.8.1)
     python: 71
+
+# JWT 认证配置
+jwt:
+  # 签名密钥（HS256）。生产环境务必替换为随机生成的长密钥（建议 ≥32 字节）并通过环境变量注入，
+  # 不要将真实密钥提交到公开仓库。
+  secret: bsoj-code-manage-jwt-secret-change-me-in-production-2f8a1c9e4b
+  # token 有效期（小时）
+  expire-hours: 12

@@ -1,4 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getToken, getUser } from '@/utils/auth'
+
+/** 各角色登录后的首页 */
+const roleHome = {
+  ADMIN: '/admin/home',
+  TEACHER: '/teacher/home',
+  STUDENT: '/student/home',
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,6 +19,7 @@ const router = createRouter({
       path: '/admin',
       component: () => import('@/views/admin/AdminLayout.vue'),
       redirect: '/admin/home',
+      meta: { role: 'ADMIN' },
       children: [
         { path: 'home', component: () => import('@/views/admin/Home.vue') },
         { path: 'admin', component: () => import('@/views/admin/Admin.vue') },
@@ -30,6 +39,7 @@ const router = createRouter({
       path: '/teacher',
       component: () => import('@/views/teacher/TeacherLayout.vue'),
       redirect: '/teacher/home',
+      meta: { role: 'TEACHER' },
       children: [
         { path: 'home', component: () => import('@/views/teacher/Home.vue') },
         { path: 'contest', component: () => import('@/views/teacher/Contest.vue') },
@@ -47,6 +57,7 @@ const router = createRouter({
       path: '/student',
       component: () => import('@/views/student/StudentLayout.vue'),
       redirect: '/student/home',
+      meta: { role: 'STUDENT' },
       children: [
         { path: 'home', component: () => import('@/views/student/Home.vue') },
         { path: 'contest', component: () => import('@/views/student/Contest.vue') },
@@ -62,11 +73,30 @@ const router = createRouter({
       ],
     },
 
-    { path: '/login', component: () => import('@/views/Login.vue') },
-    { path: '/register', component: () => import('@/views/Register.vue') },
+    { path: '/login', component: () => import('@/views/Login.vue'), meta: { public: true } },
+    { path: '/register', component: () => import('@/views/Register.vue'), meta: { public: true } },
     { path: '/:pathMatch(.*)*', redirect: '/login' },
   ],
 })
 
-export default router
+/**
+ * 全局路由守卫：
+ * - 公开页面（登录、注册）直接放行；
+ * - 未登录一律跳登录页；
+ * - 已登录但访问了不属于自己角色的页面时，送回该角色的首页（不清除登录态）。
+ */
+router.beforeEach((to) => {
+  if (to.meta.public) {
+    return true
+  }
+  if (!getToken()) {
+    return '/login'
+  }
+  const needRole = to.matched.find((r) => r.meta?.role)?.meta?.role
+  if (needRole && getUser().role !== needRole) {
+    return roleHome[getUser().role] || '/login'
+  }
+  return true
+})
 
+export default router

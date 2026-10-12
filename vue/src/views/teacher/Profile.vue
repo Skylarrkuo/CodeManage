@@ -49,6 +49,7 @@
               />
               <el-upload
                 :action="uploadUrl"
+                :headers="uploadHeaders"
                 :show-file-list="false"
                 :on-success="handleImgSuccess"
               >
@@ -104,10 +105,13 @@
 import { reactive } from 'vue'
 import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
+import { authHeaders, setUser } from '@/utils/auth'
 
 const emit = defineEmits(['updateUser'])
 
 const uploadUrl = import.meta.env.VITE_BASE_URL + '/files/upload'
+// el-upload 直连后端，不经过 axios 拦截器，需手动带上鉴权头
+const uploadHeaders = authHeaders()
 
 const defaultAvatar =
   'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
@@ -134,7 +138,7 @@ const save = () => {
       ElMessage.success('保存成功')
       const newUser = { ...data.user, ...data.form }
       data.user = newUser
-      localStorage.setItem('system-user', JSON.stringify(newUser))
+      setUser(newUser)
       emit('updateUser')
     } else {
       ElMessage.error(res.msg)

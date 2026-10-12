@@ -1,6 +1,7 @@
 package com.example.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.example.auth.PasswordUtil;
 import com.example.entity.Account;
 import com.example.entity.Teacher;
 import com.example.exception.CustomException;
@@ -27,9 +28,9 @@ public class TeacherService {
         if (ObjectUtil.isNotNull(dbTeacher)) {
             throw new CustomException("用户已存在");
         }
-        if (ObjectUtil.isEmpty(teacher.getPassword())) {
-            teacher.setPassword("123456");
-        }
+        // 默认密码明文 "123456"，入库前统一 BCrypt 加密
+        String rawPassword = ObjectUtil.isEmpty(teacher.getPassword()) ? "123456" : teacher.getPassword();
+        teacher.setPassword(PasswordUtil.encode(rawPassword));
         if (ObjectUtil.isEmpty(teacher.getName())) {
             teacher.setName(teacher.getUsername());
         }
@@ -70,7 +71,7 @@ public class TeacherService {
         if (ObjectUtil.isNull(dbTeacher)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbTeacher.getPassword())) {
+        if (!PasswordUtil.matches(account.getPassword(), dbTeacher.getPassword())) {
             throw new CustomException("账号或密码错误");
         }
         return dbTeacher;
@@ -82,10 +83,10 @@ public class TeacherService {
         if (ObjectUtil.isNull(dbTeacher)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbTeacher.getPassword())) {
+        if (!PasswordUtil.matches(account.getPassword(), dbTeacher.getPassword())) {
             throw new CustomException("原密码错误");
         }
-        dbTeacher.setPassword(account.getNewPassword());
+        dbTeacher.setPassword(PasswordUtil.encode(account.getNewPassword()));
         teacherMapper.updateById(dbTeacher);
     }
 
@@ -97,7 +98,7 @@ public class TeacherService {
         if (ObjectUtil.isNull(dbTeacher)) {
             throw new CustomException("用户不存在");
         }
-        dbTeacher.setPassword("123456");
+        dbTeacher.setPassword(PasswordUtil.encode("123456"));
         teacherMapper.updateById(dbTeacher);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import cn.hutool.core.io.FileUtil;
+import com.example.auth.Public;
 import com.example.common.Result;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -53,7 +54,10 @@ public class FileController {
 
     /**
      * 文件下载
+     *
+     * <p>公开接口：头像等资源以 {@code <img src>} 方式访问，浏览器不会携带 Authorization 头。</p>
      */
+    @Public
     @GetMapping("/download/{fileName}")
     public void download(@PathVariable String fileName, HttpServletResponse response) {
         // 设置下载文件http响应头

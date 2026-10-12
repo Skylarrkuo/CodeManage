@@ -1,6 +1,7 @@
 package com.example.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.example.auth.PasswordUtil;
 import com.example.entity.Account;
 import com.example.entity.Student;
 import com.example.exception.CustomException;
@@ -27,9 +28,9 @@ public class StudentService {
         if (ObjectUtil.isNotNull(dbStudent)) {
             throw new CustomException("用户已存在");
         }
-        if (ObjectUtil.isEmpty(student.getPassword())) {
-            student.setPassword("123456");
-        }
+        // 默认密码明文 "123456"，入库前统一 BCrypt 加密
+        String rawPassword = ObjectUtil.isEmpty(student.getPassword()) ? "123456" : student.getPassword();
+        student.setPassword(PasswordUtil.encode(rawPassword));
         if (ObjectUtil.isEmpty(student.getName())) {
             student.setName(student.getUsername());
         }
@@ -70,7 +71,7 @@ public class StudentService {
         if (ObjectUtil.isNull(dbStudent)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbStudent.getPassword())) {
+        if (!PasswordUtil.matches(account.getPassword(), dbStudent.getPassword())) {
             throw new CustomException("账号或密码错误");
         }
         return dbStudent;
@@ -82,10 +83,10 @@ public class StudentService {
         if (ObjectUtil.isNull(dbStudent)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbStudent.getPassword())) {
+        if (!PasswordUtil.matches(account.getPassword(), dbStudent.getPassword())) {
             throw new CustomException("原密码错误");
         }
-        dbStudent.setPassword(account.getNewPassword());
+        dbStudent.setPassword(PasswordUtil.encode(account.getNewPassword()));
         studentMapper.updateById(dbStudent);
     }
 
@@ -97,7 +98,7 @@ public class StudentService {
         if (ObjectUtil.isNull(dbStudent)) {
             throw new CustomException("用户不存在");
         }
-        dbStudent.setPassword("123456");
+        dbStudent.setPassword(PasswordUtil.encode("123456"));
         studentMapper.updateById(dbStudent);
     }
 }

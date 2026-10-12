@@ -1,6 +1,7 @@
 package com.example.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.example.auth.PasswordUtil;
 import com.example.entity.Account;
 import com.example.entity.Admin;
 import com.example.exception.CustomException;
@@ -27,15 +28,16 @@ public class AdminService {
     public void add(Admin admin) {
         Admin dbAdmin = adminMapper.selectByUsername(admin.getUsername());
         if (ObjectUtil.isNotNull(dbAdmin)) {
-            throw new CustomException("用户不存在");
+            throw new CustomException("用户已存在");
         }
-        if (ObjectUtil.isEmpty(admin.getPassword())) {
-            admin.setPassword("admin");
-        }
+        // 默认密码明文 "admin"，入库前统一 BCrypt 加密
+        String rawPassword = ObjectUtil.isEmpty(admin.getPassword()) ? "admin" : admin.getPassword();
+        admin.setPassword(PasswordUtil.encode(rawPassword));
         if (ObjectUtil.isEmpty(admin.getName())) {
             admin.setName(admin.getUsername());
         }
-        admin.setRole("管理员");
+        // 必须与数据库中的角色取值保持一致，否则据此签发的 token 会导致所有 /admin/** 接口返回 403
+        admin.setRole("ADMIN");
         adminMapper.insert(admin);
     }
 
@@ -84,7 +86,7 @@ public class AdminService {
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbAdmin.getPassword())) {
+        if (!PasswordUtil.matches(account.getPassword(), dbAdmin.getPassword())) {
             throw new CustomException("账号或密码错误");
         }
         return dbAdmin;
@@ -98,10 +100,10 @@ public class AdminService {
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbAdmin.getPassword())) {
+        if (!PasswordUtil.matches(account.getPassword(), dbAdmin.getPassword())) {
             throw new CustomException("原密码错误");
         }
-        dbAdmin.setPassword(account.getNewPassword());
+        dbAdmin.setPassword(PasswordUtil.encode(account.getNewPassword()));
         adminMapper.updateById(dbAdmin);
     }
 

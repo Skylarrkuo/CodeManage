@@ -72,6 +72,8 @@ import { reactive } from 'vue'
 import router from '@/router'
 import { ElMessage } from 'element-plus'
 
+import { clearAuth } from '@/utils/auth'
+
 const defaultAvatar =
   'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
@@ -92,9 +94,9 @@ const updateUser = () => {
 }
 
 const logout = () => {
+  clearAuth()
   router.push('/login')
   ElMessage.success('退出成功')
-  localStorage.removeItem('system-user')
 }
 
 const goHome = () => {

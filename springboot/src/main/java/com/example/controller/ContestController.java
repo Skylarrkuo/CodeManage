@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.auth.RequireRole;
 import com.example.common.Result;
 import com.example.dto.ContestRankVO;
 import com.example.entity.Contest;
@@ -12,6 +13,9 @@ import java.util.List;
 
 /**
  * 竞赛管理前端操作接口
+ *
+ * <p>写操作（新增/修改/删除/按班级批量参赛）限管理员与教师；
+ * 查询与排行榜三种角色均可访问。</p>
  */
 @RestController
 @RequestMapping("/contest")
@@ -22,6 +26,7 @@ public class ContestController {
 
     /** 新增 */
     @PostMapping("/add")
+    @RequireRole({"ADMIN", "TEACHER"})
     public Result add(@RequestBody Contest contest) {
         contestService.add(contest);
         // 返回新建竞赛的 ID，方便前端在保存后立即跳转到“题目管理”页面
@@ -30,6 +35,7 @@ public class ContestController {
 
     /** 删除 */
     @DeleteMapping("/delete/{id}")
+    @RequireRole({"ADMIN", "TEACHER"})
     public Result deleteById(@PathVariable Integer id) {
         contestService.deleteById(id);
         return Result.success();
@@ -37,6 +43,7 @@ public class ContestController {
 
     /** 修改 */
     @PutMapping("/update")
+    @RequireRole({"ADMIN", "TEACHER"})
     public Result updateById(@RequestBody Contest contest) {
         contestService.updateById(contest);
         return Result.success();
@@ -44,6 +51,7 @@ public class ContestController {
 
     /** 根据ID查询 */
     @GetMapping("/selectById/{id}")
+    @RequireRole({"ADMIN", "TEACHER", "STUDENT"})
     public Result selectById(@PathVariable Integer id) {
         Contest contest = contestService.selectById(id);
         return Result.success(contest);
@@ -51,6 +59,7 @@ public class ContestController {
 
     /** 查询所有 */
     @GetMapping("/selectAll")
+    @RequireRole({"ADMIN", "TEACHER", "STUDENT"})
     public Result selectAll(Contest contest) {
         List<Contest> list = contestService.selectAll(contest);
         return Result.success(list);
@@ -58,6 +67,7 @@ public class ContestController {
 
     /** 分页查询 */
     @GetMapping("/selectPage")
+    @RequireRole({"ADMIN", "TEACHER", "STUDENT"})
     public Result selectPage(Contest contest,
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -69,6 +79,7 @@ public class ContestController {
      * 为竞赛按班级批量添加参赛学生（课堂测验场景）
      */
     @PostMapping("/assignClasses")
+    @RequireRole({"ADMIN", "TEACHER"})
     public Result assignClasses(@RequestBody AssignClassesRequest request) {
         contestService.assignClasses(request.getContestId(), request.getClassIds());
         return Result.success();
@@ -78,6 +89,7 @@ public class ContestController {
      * 某场竞赛的 ACM/ICPC 风格排行榜
      */
     @GetMapping("/rank/{contestId}")
+    @RequireRole({"ADMIN", "TEACHER", "STUDENT"})
     public Result rank(@PathVariable Integer contestId) {
         ContestRankVO rankVO = contestService.getContestRank(contestId);
         return Result.success(rankVO);
@@ -107,4 +119,3 @@ public class ContestController {
         }
     }
 }
-

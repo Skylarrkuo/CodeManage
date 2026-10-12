@@ -35,7 +35,7 @@ CREATE TABLE `admin`  (
 -- ----------------------------
 -- Records of admin
 -- ----------------------------
-INSERT INTO `admin` VALUES (1, 'admin', 'admin', '管理员', 'http://localhost:9090/files/download/avatar.png', 'ADMIN');
+INSERT INTO `admin` VALUES (1, 'admin', '$2a$10$BW.YIh5nuKW9tCpPfLjxr.AFczpgC3XVv1kF2a1mpOuEK6/FUgrla', '管理员', 'http://localhost:9090/files/download/avatar.png', 'ADMIN');
 
 -- ----------------------------
 -- Table structure for clazz
@@ -181,10 +181,10 @@ CREATE TABLE `student`  (
 -- ----------------------------
 -- Records of student
 -- ----------------------------
-INSERT INTO `student` VALUES (1, 'student', '123456', '学生用户', 'http://localhost:9090/files/download/1773573013503-a073c4fa-09cf-4c18-8360-a056afd5e66a_1747553792953195825~tplv-a9rns2rl98-web-watermark-v2.png', '20240001', '2024', '计算机科学与技术', '计科1班', 'STUDENT');
-INSERT INTO `student` VALUES (2, 'stu2024a', '123456', '张三', NULL, '20240002', '2024', '计算机科学与技术', '计科1班', 'STUDENT');
-INSERT INTO `student` VALUES (3, 'stu2024b', '123456', '李四', NULL, '20240003', '2024', '计算机科学与技术', '计科2班', 'STUDENT');
-INSERT INTO `student` VALUES (4, 'stu2023a', '123456', '王五', NULL, '20230001', '2023', '软件工程', '软工1班', 'STUDENT');
+INSERT INTO `student` VALUES (1, 'student', '$2a$10$Te/rgZpIXEw6OgMnLMQqaeRA8tttIqpAybxkQd7a8o.CNVKbDLQ56', '学生用户', 'http://localhost:9090/files/download/1773573013503-a073c4fa-09cf-4c18-8360-a056afd5e66a_1747553792953195825~tplv-a9rns2rl98-web-watermark-v2.png', '20240001', '2024', '计算机科学与技术', '计科1班', 'STUDENT');
+INSERT INTO `student` VALUES (2, 'stu2024a', '$2a$10$Te/rgZpIXEw6OgMnLMQqaeRA8tttIqpAybxkQd7a8o.CNVKbDLQ56', '张三', NULL, '20240002', '2024', '计算机科学与技术', '计科1班', 'STUDENT');
+INSERT INTO `student` VALUES (3, 'stu2024b', '$2a$10$Te/rgZpIXEw6OgMnLMQqaeRA8tttIqpAybxkQd7a8o.CNVKbDLQ56', '李四', NULL, '20240003', '2024', '计算机科学与技术', '计科2班', 'STUDENT');
+INSERT INTO `student` VALUES (4, 'stu2023a', '$2a$10$Te/rgZpIXEw6OgMnLMQqaeRA8tttIqpAybxkQd7a8o.CNVKbDLQ56', '王五', NULL, '20230001', '2023', '软件工程', '软工1班', 'STUDENT');
 
 -- ----------------------------
 -- Table structure for submission
@@ -248,6 +248,6 @@ CREATE TABLE `teacher`  (
 -- ----------------------------
 -- Records of teacher
 -- ----------------------------
-INSERT INTO `teacher` VALUES (1, 'teacher', '123456', '教师用户', 'http://localhost:9090/files/download/1773573002182-0e08cefbe8869d1518272aad8bfbc940.jpg', '讲师', '13800000000', 'teacher@example.com', 'TEACHER');
+INSERT INTO `teacher` VALUES (1, 'teacher', '$2a$10$Te/rgZpIXEw6OgMnLMQqaeRA8tttIqpAybxkQd7a8o.CNVKbDLQ56', '教师用户', 'http://localhost:9090/files/download/1773573002182-0e08cefbe8869d1518272aad8bfbc940.jpg', '讲师', '13800000000', 'teacher@example.com', 'TEACHER');
 
 SET FOREIGN_KEY_CHECKS = 1;

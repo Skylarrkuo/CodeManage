@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.auth.RequireRole;
 import com.example.common.Result;
 import com.example.entity.Admin;
 import com.example.service.AdminService;
@@ -14,6 +15,7 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/admin")
+@RequireRole("ADMIN")
 public class AdminController {
 
     @Resource
@@ -52,6 +54,9 @@ public class AdminController {
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
         Admin admin = adminService.selectById(id);
+        if (admin != null) {
+            admin.setPassword(null);
+        }
         return Result.success(admin);
     }
 
@@ -61,6 +66,7 @@ public class AdminController {
     @GetMapping("/selectAll")
     public Result selectAll(Admin admin) {
         List<Admin> list = adminService.selectAll(admin);
+        list.forEach(item -> item.setPassword(null));
         return Result.success(list);
     }
 
@@ -72,6 +78,7 @@ public class AdminController {
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
         PageInfo<Admin> page = adminService.selectPage(admin, pageNum, pageSize);
+        page.getList().forEach(item -> item.setPassword(null));
         return Result.success(page);
     }
 

@@ -164,7 +164,7 @@ const handleRegister = () => {
     delete payload.confirmPassword
 
     request
-      .post('/student/add', payload)
+      .post('/register', payload)
       .then((res) => {
         if (res.code === '200') {
           ElMessage.success('注册成功，请使用新账号登录')

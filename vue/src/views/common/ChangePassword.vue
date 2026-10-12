@@ -23,6 +23,8 @@
 import { reactive, ref } from 'vue'
 import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
+import router from '@/router'
+import { clearAuth } from '@/utils/auth'
 
 const user = JSON.parse(localStorage.getItem('system-user') || '{}')
 
@@ -63,8 +65,9 @@ const submit = () => {
     request.put('/updatePassword', payload).then((res) => {
       if (res.code === '200') {
         ElMessage.success('密码修改成功，请使用新密码重新登录')
-        // 修改密码后强制退出登录
-        localStorage.removeItem('system-user')
+        // 修改密码后强制退出登录，并回到登录页
+        clearAuth()
+        router.push('/login')
       } else {
         ElMessage.error(res.msg)
       }

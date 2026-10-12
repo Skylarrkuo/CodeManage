@@ -103,6 +103,7 @@
   import request from "@/utils/request";
   import {ElMessage} from "element-plus";
   import router from "@/router";
+  import { setToken, setUser } from "@/utils/auth";
 
   const data = reactive({
     form: { role: 'ADMIN' },
@@ -125,9 +126,12 @@
         request.post('/login', data.form).then(res => {
           if (res.code === '200') {
             ElMessage.success('登录成功')
-            localStorage.setItem('system-user', JSON.stringify(res.data || {}))
+            // token 单独存放；用户信息里不再混入 token
+            const { token, ...userInfo } = res.data || {}
+            setToken(token)
+            setUser(userInfo)
 
-            const role = res.data?.role
+            const role = userInfo.role
             let path = '/login'
             if (role === 'ADMIN') {
               path = '/admin/home'
